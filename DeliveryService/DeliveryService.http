@@ -1,0 +1,26 @@
+﻿@DeliveryService_HostAddress = http://localhost:5151
+
+POST {{DeliveryService_HostAddress}}/orders
+Content-Type: application/json
+{
+  "id": 1,
+  "address": "Академика Фортова 1",
+  "deliverytime": "24.11.2024",
+  "state": "new"
+}
+
+###
+
+DELETE {{DeliveryService_HostAddress}}/orders/1
+
+###
+
+POST {{DeliveryService_HostAddress}}/cargos
+Content-Type: application/json
+{
+  "id": "1",
+  "name": "Грузик",
+  "weight": "10",
+  "sizeclass": "small"
+}
+###
