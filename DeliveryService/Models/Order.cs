@@ -1,5 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Text.Json.Serialization;
+using System.Xml.Linq;
 
 namespace DeliveryService.Models
 {
@@ -13,6 +16,8 @@ namespace DeliveryService.Models
         public required DateTime DeliveryTime { get; set; }
 
         public Courier? Courier { get; set; }
+
+        public required Cargo Cargo { get; set; }
 
         public string? Description { get; set; }
 

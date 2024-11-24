@@ -5,8 +5,16 @@ Content-Type: application/json
 {
   "id": 1,
   "address": "Академика Фортова 1",
-  "deliverytime": "24.11.2024",
-  "state": "new"
+  "deliverytime": "2003-01-19T00:00:00",
+  "state": "new",
+  "courierid": 1,
+  "cargo":
+  {
+    "id": "1",
+    "name": "Иван",
+    "weight": "16",
+    "sizeclass": "small"
+  }
 }
 
 ###
@@ -23,4 +31,26 @@ Content-Type: application/json
   "weight": "10",
   "sizeclass": "small"
 }
+###
+
+@id=1
+PUT {{DeliveryService_HostAddress}}/orders/{{id}}
+Content-Type: application/json
+{
+  "address": "Академика Фортова 1",
+  "deliverytime": "2003-01-19T00:00:00",
+  "state": "cancelled",
+  "cargo":
+  {
+    "id": "1",
+    "name": "Грузэк",
+    "weight": "16",
+    "sizeclass": "small"
+  },
+  "description": "отменен"
+}
+###
+
+GET {{DeliveryService_HostAddress}}/orders
+
 ###
