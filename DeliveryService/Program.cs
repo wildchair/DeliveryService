@@ -17,7 +17,7 @@ app.MapGet("/orders", async (DeliveryDb db) =>
     return await db.Orders.Include(x => x.Courier).Include(x => x.Cargo).ToListAsync();
 });
 
-app.MapGet("/orders{id}", async (int id, DeliveryDb db) =>
+app.MapGet("/orders/{id}", async (int id, DeliveryDb db) =>
 {
     var order = await db.Orders.FindAsync(id);
     if (order == null)
