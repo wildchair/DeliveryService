@@ -87,6 +87,9 @@ app.MapPost("/orders", async (NewOrderDto newOrder, DeliveryDb db) =>
 
 app.MapPost("/orders/initialize", async (Order[] orders, DeliveryDb db) =>
 {
+    if (db.Orders.Count() > 0)
+        return Results.Ok();
+
     db.Orders.AddRange(orders);
     await db.SaveChangesAsync();
 
