@@ -1,4 +1,5 @@
-﻿using DeliveryService.Extensions;
+﻿using DeliveryService.Dto;
+using DeliveryService.Extensions;
 using DeliveryService.Models;
 using DeliveryService.Repository;
 using DeliveryService.Utils;
@@ -7,58 +8,24 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<DeliveryDb>(x => x.UseInMemoryDatabase("Delivery"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddOpenApi();
 var app = builder.Build();
-
-app.MapGet("/init", async (DeliveryDb db) =>
-{
-    List<Order> startOrders =
-    [
-    new()
-    {
-        Id = 1,
-        Address = "ул. Усиевича, д.1",
-        State = OrderState.New,
-        DeliveryTime = DateTime.Now.AddDays(-12.5),
-        Cargo = new() {Id=1, Name="Пакет документов", SizeClass = CargoSizeClass.Small, Weight=0.03f}
-    },
-    new()
-    {
-        Id=2,
-        Address = "ул. Фортова, д.13",
-        State = OrderState.InProgress,
-        DeliveryTime = DateTime.Now.AddDays(2),
-        Courier = new() {Id = 1, Name = "Федор", Surname="Иванченко", Phone="+79052684713"},
-        Cargo = new() {Id=2, Name="Гиря", SizeClass = CargoSizeClass.Medium, Weight=10f}
-    },
-    new()
-    {
-        Id=3,
-        Address = "ул. Павленко, д.4",
-        State = OrderState.Cancelled,
-        DeliveryTime = DateTime.Now.AddDays(-2),
-        Courier = new() {Id = 2, Name = "Геннадий", Surname="Грешников", Phone="+79055794713"},
-        Cargo = new() {Id=3, Name="Весло", SizeClass = CargoSizeClass.Large, Weight=5f},
-        Description = "Отказ"
-    },
-    new()
-    {
-        Id=4,
-        Address = "ул. Усиевича, д.1",
-        State = OrderState.Completed,
-        DeliveryTime = DateTime.Now.AddDays(-5),
-        Courier = new() {Id = 3, Name = "Василий", Surname="Теркин", Phone="+79055713813"},
-        Cargo = new() {Id=4, Name="Картина", SizeClass = CargoSizeClass.Medium, Weight=1.5f}
-    }
-    ];
-
-    await db.Orders.AddRangeAsync(startOrders);
-    await db.SaveChangesAsync();
-    return Results.Created("/orders", startOrders);
-});
+app.MapOpenApi();
 
 app.MapGet("/orders", async (DeliveryDb db) =>
 {
     return await db.Orders.Include(x => x.Courier).Include(x => x.Cargo).ToListAsync();
+});
+
+app.MapGet("/orders{id}", async (int id, DeliveryDb db) =>
+{
+    var order = await db.Orders.FindAsync(id);
+    if (order == null)
+        return Results.NotFound(id);
+
+    await db.Entry(order).Reference(p => p.Cargo).LoadAsync();
+    await db.Entry(order).Reference(p => p.Courier).LoadAsync();
+    return Results.Ok(order);
 });
 
 app.MapGet("/orders/search/{query}", async (string query, DeliveryDb db) =>
@@ -103,6 +70,8 @@ app.MapPost("/orders", async (NewOrderDto newOrder, DeliveryDb db) =>
 
     if (await db.Orders.FindAsync(order.Id) != null)
         return Results.BadRequest($"Заявка с ID:{order.Id} уже существует.");
+    if (await db.Cargos.FindAsync(order.Cargo.Id) != null)
+        return Results.BadRequest($"Груз с ID:{order.Cargo.Id} уже существует.");
 
     if (newOrder.CourierId != null)
     {
@@ -116,20 +85,29 @@ app.MapPost("/orders", async (NewOrderDto newOrder, DeliveryDb db) =>
     return Results.Created($"/orders/{order.Id}", order);
 });
 
+app.MapPost("/orders/initialize", async (Order[] orders, DeliveryDb db) =>
+{
+    db.Orders.AddRange(orders);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/orders/initialize", orders);
+});
+
 app.MapPut("/orders/{id}", async (int id, UpdateOrderDto inputOrder, DeliveryDb db) =>
 {
     var order = await db.Orders.FindAsync(id);
+    var inputCourier = await db.Couriers.FindAsync(inputOrder.CourierId);
 
-    if (order is null) return Results.NotFound();
+    if (order is null || inputCourier is null) return Results.NotFound();
 
     await db.Entry(order).Reference(p => p.Cargo).LoadAsync();
     await db.Entry(order).Reference(p => p.Courier).LoadAsync();
 
-    var courier = order.Courier ?? inputOrder.Courier;
+    var inputCourierId = inputOrder.CourierId;
 
     var changedProperties = PropertyComparator.FindChangedProperties(order, inputOrder);
 
-    if (changedProperties.Count() == 0)
+    if (changedProperties.Count() == 0 && inputCourier == order.Courier)
         return Results.NoContent();
 
     // нездоровое увлечение рефлексией
@@ -142,7 +120,7 @@ app.MapPut("/orders/{id}", async (int id, UpdateOrderDto inputOrder, DeliveryDb 
                     return Results.BadRequest("Для отмены заказа необходимо указать комментарий.");
 
                 if ((inputOrder.State == OrderState.InProgress || inputOrder.State == OrderState.Completed) &&
-                     order.Courier == null && inputOrder.Courier == null)
+                     order.Courier == null && inputOrder.CourierId == null)
                     return Results.BadRequest($"Для перевода заказа в состояние {inputOrder.State} необходимо назначить курьера.");
             }
             break;
@@ -153,8 +131,9 @@ app.MapPut("/orders/{id}", async (int id, UpdateOrderDto inputOrder, DeliveryDb 
             if (inputOrder.State == OrderState.Completed && changedProperties.Any(x => x.original.Name != nameof(order.State)))
                 return Results.BadRequest("Заказ нельзя изменять на этом этапе.");
 
-            if (inputOrder.State == OrderState.Cancelled && String.IsNullOrEmpty(inputOrder.Description) ||
-               changedProperties.Any(x => x.original.Name != nameof(order.State) && x.original.Name != nameof(order.Description)))
+            if (inputOrder.State == OrderState.Cancelled && (String.IsNullOrEmpty(inputOrder.Description) ||
+               changedProperties.Any(x => x.original.Name != nameof(order.State) && x.original.Name != nameof(order.Description))) ||
+               order.Courier.Id != inputCourier.Id)
                 return Results.BadRequest("При отмене заказа необходимо указать только комментарий.");
 
             break;
@@ -162,21 +141,23 @@ app.MapPut("/orders/{id}", async (int id, UpdateOrderDto inputOrder, DeliveryDb 
             return Results.BadRequest("Заказ нельзя изменять на этом этапе.");
     }
 
+    order.Courier = inputCourier;
+
     foreach (var property in changedProperties)
     {
-        if (property.Item1.Name == nameof(order.Cargo))
+        if (property.original.Name == nameof(order.Cargo))
         {
             order.Cargo.CopyFrom(inputOrder.Cargo);
 
             continue;
         }
 
-        if (property.original.Name == nameof(order.Courier))
-        {
-            order.Courier = order.Courier == null ? inputOrder.Courier : order.Courier.CopyFrom(inputOrder.Courier);
-            //order.Courier.CopyFrom(inputOrder.Courier);
-            continue;
-        }
+        //if (property.original.Name == nameof(order.Courier))
+        //{
+        //    order.Courier = order.Courier == null ? inputOrder.Courier : order.Courier.CopyFrom(inputOrder.Courier);
+        //    //order.Courier.CopyFrom(inputOrder.Courier);
+        //    continue;
+        //}
 
         property.original.SetValue(order, property.changed.GetValue(inputOrder));
     }

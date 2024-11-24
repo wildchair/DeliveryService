@@ -1,0 +1,47 @@
+﻿<Window x:Class="DeliveryClient.AddWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DeliveryClient"
+        mc:Ignorable="d"
+        xmlns:viewmodels="clr-namespace:DeliveryClient.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:NewOrderDtoViewModel}"
+        Title="AddWindow" Height="279" Width="439">
+    <Grid>
+        <StackPanel Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="OrderId" Width="75"/>
+                <TextBox Text="{Binding NewOrderDto.Id}" Width="154"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Address" Width="75"/>
+                <TextBox Text="{Binding NewOrderDto.Address}" Width="154"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="DeliveryTime" Width="75"/>
+                <TextBox Text="{Binding NewOrderDto.DeliveryTime}" Width="154"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="CourierId" Width="75"/>
+                <TextBox Text="{Binding NewOrderDto.CourierId}" Width="154"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="CargoId" Width="75"/>
+                <TextBox Text="{Binding NewOrderDto.Cargo.Id}" Width="154"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="CargoName" Width="75"/>
+                <TextBox Text="{Binding NewOrderDto.Cargo.Name}" Width="154"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Weight" Width="75"/>
+                <TextBox Text="{Binding NewOrderDto.Cargo.Weight}" Width="154"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="SizeClass" Width="75"/>
+                <TextBox Text="{Binding NewOrderDto.Cargo.SizeClass}" Width="154"/>
+            </StackPanel>
+            <Button Click="Button_Click" Content="Создать и отправить"/>
+        </StackPanel>
+    </Grid>
+</Window>

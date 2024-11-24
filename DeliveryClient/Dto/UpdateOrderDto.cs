@@ -1,6 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using DeliveryService.Models;
+using System.Text.Json.Serialization;
 
-namespace DeliveryService.Models
+namespace DeliveryClient.Dto
 {
     public class UpdateOrderDto
     {
@@ -8,7 +9,7 @@ namespace DeliveryService.Models
 
         public DateTime? DeliveryTime { get; set; }
 
-        public Courier Courier { get; set; }
+        public int CourierId { get; set; }
 
         public Cargo Cargo { get; set; }
 

@@ -1,23 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace DeliveryService.Models
 {
-    public class Cargo
+    public class Courier
     {
         [Key]
         public required int Id { get; set; }
-
         public required string Name { get; set; }
-
-        public required float Weight { get; set; }
-
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        public required CargoSizeClass SizeClass { get; set; }
+        public required string Surname { get; set; }
+        public required string Phone { get; set; }
+        public bool IsCarCourier { get; set; }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Id, Name, Weight, SizeClass);
+            return HashCode.Combine(Id, Name, Surname, Phone, IsCarCourier);
         }
 
         public override bool Equals(object? obj)
@@ -26,13 +22,5 @@ namespace DeliveryService.Models
 
             return GetHashCode() == obj.GetHashCode();
         }
-    }
-
-    public enum CargoSizeClass
-    {
-        None,
-        Small,
-        Medium,
-        Large
     }
 }

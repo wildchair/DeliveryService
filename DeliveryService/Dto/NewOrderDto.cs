@@ -1,4 +1,6 @@
-﻿namespace DeliveryService.Models
+﻿using DeliveryService.Models;
+
+namespace DeliveryService.Dto
 {
     public class NewOrderDto
     {
