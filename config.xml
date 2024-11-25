@@ -1,0 +1,76 @@
+<Config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<ServerAddress>127.0.0.1</ServerAddress>
+<ServerPort>5000</ServerPort>
+<Orders>
+<Order>
+<Id>1</Id>
+<Address>ул. Усиевича, д.1</Address>
+<DeliveryTime>2024-11-12T13:37:52.6768052+03:00</DeliveryTime>
+<Cargo>
+<Id>1</Id>
+<Name>Пакет документов</Name>
+<Weight>0.03</Weight>
+<SizeClass>Small</SizeClass>
+</Cargo>
+<State>New</State>
+</Order>
+<Order>
+<Id>2</Id>
+<Address>ул. Фортова, д.13</Address>
+<DeliveryTime>2024-11-27T01:37:52.6807568+03:00</DeliveryTime>
+<Courier>
+<Id>1</Id>
+<Name>Федор</Name>
+<Surname>Иванченко</Surname>
+<Phone>+79052684713</Phone>
+<IsCarCourier>false</IsCarCourier>
+</Courier>
+<Cargo>
+<Id>2</Id>
+<Name>Гиря</Name>
+<Weight>10</Weight>
+<SizeClass>Medium</SizeClass>
+</Cargo>
+<State>InProgress</State>
+</Order>
+<Order>
+<Id>3</Id>
+<Address>ул. Павленко, д.4</Address>
+<DeliveryTime>2024-11-23T01:37:52.6810077+03:00</DeliveryTime>
+<Courier>
+<Id>2</Id>
+<Name>Геннадий</Name>
+<Surname>Грешников</Surname>
+<Phone>+79055794713</Phone>
+<IsCarCourier>false</IsCarCourier>
+</Courier>
+<Cargo>
+<Id>3</Id>
+<Name>Весло</Name>
+<Weight>5</Weight>
+<SizeClass>Large</SizeClass>
+</Cargo>
+<Description>Отказ</Description>
+<State>Cancelled</State>
+</Order>
+<Order>
+<Id>4</Id>
+<Address>ул. Усиевича, д.1</Address>
+<DeliveryTime>2024-11-20T01:37:52.6810404+03:00</DeliveryTime>
+<Courier>
+<Id>3</Id>
+<Name>Василий</Name>
+<Surname>Теркин</Surname>
+<Phone>+79055713813</Phone>
+<IsCarCourier>false</IsCarCourier>
+</Courier>
+<Cargo>
+<Id>4</Id>
+<Name>Картина</Name>
+<Weight>1.5</Weight>
+<SizeClass>Medium</SizeClass>
+</Cargo>
+<State>Completed</State>
+</Order>
+</Orders>
+</Config>
